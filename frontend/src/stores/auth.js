@@ -5,7 +5,7 @@ axios.defaults.baseURL = 'http://127.0.0.1:8000/api'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    user: null,
+   user: JSON.parse(localStorage.getItem('user')) || null, 
     token: localStorage.getItem('token') || null,
     error: null
   }),

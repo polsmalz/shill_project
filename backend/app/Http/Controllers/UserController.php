@@ -23,22 +23,20 @@ class UserController extends Controller
         return response()->json(['users' => $users]);
     }
 
-    public function deactivate($id) {
-    $user = User::find($id);
-    if ($user) {
-        $user->status = 'inactive';
-        $user->save();
-    }
-    return response()->json($user);
+   // Example in UserController
+public function deactivate($id) {
+    $user = User::findOrFail($id);
+    $user->status = 'inactive';
+    $user->save();
+    return response()->json(['status' => $user->status]);
 }
 
 public function activate($id) {
-    $user = User::find($id);
-    if ($user) {
-        $user->status = 'active';
-        $user->save();
-    }
-    return response()->json($user);
+    $user = User::findOrFail($id);
+    $user->status = 'active';
+    $user->save();
+    return response()->json(['status' => $user->status]);
 }
+
 
 }

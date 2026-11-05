@@ -1,33 +1,50 @@
-<?php
-
-namespace App\Http\Controllers;
-
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use App\Models\ResourceUsage;
-
-class ResourceUsageController extends Controller
+public function index()
 {
-    public function index()
-    {
-        return Auth::user()->resourceUsages()->latest()->get();
+    $users = DB::table('users')->get()->keyBy('id');
+
+    $reports = [];
+
+    $emissions = DB::table('emissions')->get();
+    foreach ($emissions as $e) {
+        $reports[] = [
+            'user_id' => $e->user_id,
+            'user_name' => $users[$e->user_id]->name ?? 'Unknown',
+            'type' => 'Emission',
+            'co2' => $e->total_co2 ?? 0,
+            'waste' => 0,
+            'water' => 0,
+            'created_at' => $e->created_at,
+            'status' => $e->status ?? 'pending',
+        ];
     }
 
-    public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'water_liters' => 'required|numeric',
-            'fuel_liters'  => 'required|numeric',
-        ]);
-
-        $total = $validated['water_liters'] + $validated['fuel_liters'];
-
-        $record = Auth::user()->resourceUsages()->create([
-            'water_liters' => $validated['water_liters'],
-            'fuel_liters'  => $validated['fuel_liters'],
-            'total_usage'  => $total,
-        ]);
-
-        return response()->json($record, 201);
+    $wastes = DB::table('wastes')->get();
+    foreach ($wastes as $w) {
+        $reports[] = [
+            'user_id' => $w->user_id,
+            'user_name' => $users[$w->user_id]->name ?? 'Unknown',
+            'type' => 'Waste',
+            'co2' => 0,
+            'waste' => $w->total_waste ?? 0,
+            'water' => 0,
+            'created_at' => $w->created_at,
+            'status' => $w->status ?? 'pending',
+        ];
     }
+
+    $resources = DB::table('resource_usages')->get();
+    foreach ($resources as $r) {
+        $reports[] = [
+            'user_id' => $r->user_id,
+            'user_name' => $users[$r->user_id]->name ?? 'Unknown',
+            'type' => 'Resource Usage',
+            'co2' => 0,
+            'waste' => 0,
+            'water' => $r->water_used ?? 0,
+            'created_at' => $r->created_at,
+            'status' => $r->status ?? 'pending',
+        ];
+    }
+
+    return response()->json(['reports' => $reports]);
 }
